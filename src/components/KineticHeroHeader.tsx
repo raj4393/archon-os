@@ -122,7 +122,7 @@ export default function KineticHeroHeader(): React.JSX.Element {
          if (i === 0) ctx.moveTo(i, cy);
          else ctx.lineTo(i, cy);
       }
-      ctx.strokeStyle = `rgba(6, 182, 212, ${0.15 + (mouseState.current.currentSplit * 0.02)})`;
+      ctx.strokeStyle = `rgba(6, 182, 212, ${0.12 + (mouseState.current.currentSplit * 0.02)})`;
       ctx.stroke();
 
       // 4. Ion Sweep / Energy Wavefront
@@ -218,7 +218,7 @@ export default function KineticHeroHeader(): React.JSX.Element {
         {/* Architectural HUD Telemetry (Top) */}
         <div style={{ 
           display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '720px', 
-          fontSize: '0.65rem', fontFamily: 'monospace', color: '#06b6d4', opacity: 0.8, letterSpacing: '0.1em' 
+          fontSize: '10px', fontFamily: 'monospace', color: '#06b6d4', opacity: 0.4, letterSpacing: '0.1em' 
         }}>
            <span ref={vFluxRef}>[V_FLUX: 00.0%]</span>
            <span ref={polarRef}>[POLAR: Ø_00.0°]</span>
@@ -257,20 +257,22 @@ export default function KineticHeroHeader(): React.JSX.Element {
         </div>
         
         <p style={{
-          color: '#94A3B8',
-          fontSize: 'clamp(0.875rem, 2vw, 1.0625rem)',
-          maxWidth: '640px',
+          color: '#cbd5e1',
+          fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+          maxWidth: '42rem',
           margin: '0 auto',
-          lineHeight: 1.6,
-          fontFamily: 'monospace'
+          lineHeight: 1.625,
+          textAlign: 'center',
+          letterSpacing: '0.025em',
+          fontWeight: 400
         }}>
-          Tell us about your skills and interests. Our AI engine will generate a tailored project blueprint with architecture, roadmap, and defense prep.
+          Architect production-grade capstone systems across any engineering discipline—complete with technical blueprints, execution roadmaps, and review-ready defense strategies.
         </p>
 
         {/* Bottom HUD */}
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '720px', gap: '1rem', marginTop: '0.5rem' }}>
            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(129, 140, 248, 0.4))' }} />
-           <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: '#818cf8', letterSpacing: '0.15em', opacity: 0.8 }}>SYS.OPT // ACTIVE</span>
+           <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#818cf8', letterSpacing: '0.15em', opacity: 0.4 }}>SYS.OPT // ACTIVE</span>
            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(270deg, transparent, rgba(129, 140, 248, 0.4))' }} />
         </div>
         
