@@ -1,273 +1,280 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-const TEXT_FINAL = "Build Your Capstone Project";
-const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*()<>{}[]+=-_~|/";
+const TEXT = "Build Your Capstone Project";
 
-const KineticHeroHeader: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+export default function KineticHeroHeader(): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [displayText, setDisplayText] = useState<string>("");
-  const [isTypingComplete, setIsTypingComplete] = useState<boolean>(false);
-
-  // 1. Dual-Phase Glyph Decryption Engine
-  useEffect(() => {
-    let frame = 0;
-    const totalFrames = 72; // ~1.2s at 60fps
-    const textLength = TEXT_FINAL.length;
-    let animationFrameId: number;
-
-    const decryptLoop = () => {
-      frame++;
-      let currentText = "";
-      for (let i = 0; i < textLength; i++) {
-        const threshold = (i / textLength) * totalFrames;
-        if (frame >= threshold) {
-          currentText += TEXT_FINAL[i];
-        } else {
-          currentText += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-        }
-      }
-      setDisplayText(currentText);
-
-      if (frame < totalFrames) {
-        animationFrameId = requestAnimationFrame(decryptLoop);
-      }
-    };
-
-    decryptLoop();
-
-    return () => cancelAnimationFrame(animationFrameId);
-  }, []);
-
-  // 2. Telemetry HUD Typewriter Effect
-  const SUBTITLE = "Tell us about your skills and interests. Our AI engine will generate a tailored project blueprint with architecture, roadmap, and defense prep.";
-  const [subText, setSubText] = useState("");
-
-  useEffect(() => {
-    let i = 0;
-    const interval = setInterval(() => {
-      setSubText(SUBTITLE.slice(0, i));
-      i++;
-      if (i > SUBTITLE.length) {
-        clearInterval(interval);
-        setIsTypingComplete(true);
-      }
-    }, 15);
-    return () => clearInterval(interval);
-  }, []);
-
-  // 3. Interactive Constellation Canvas
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  const vFluxRef = useRef<HTMLSpanElement>(null);
+  const polarRef = useRef<HTMLSpanElement>(null);
+  
+  // Track cursor velocity for RGB split
+  const mouseState = useRef({ x: 0, y: 0, vx: 0, vy: 0, targetSplit: 0, currentSplit: 0 });
+  
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
-
+    
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    let particles: { x: number; y: number; vx: number; vy: number; radius: number; color: string }[] = [];
-    const numParticles = 40;
-    const colors = ['rgba(56, 189, 248, 0.4)', 'rgba(129, 140, 248, 0.4)'];
     
-    let width = 0;
-    let height = 0;
-    let mouseX = 0;
-    let mouseY = 0;
-
+    let w = 0, h = 0;
     const resize = () => {
-      width = container.clientWidth;
-      height = container.clientHeight;
-      canvas.width = width;
-      canvas.height = height;
+      w = container.clientWidth;
+      h = container.clientHeight;
+      canvas.width = w;
+      canvas.height = h;
     };
-
     resize();
     window.addEventListener('resize', resize);
-
-    for (let i = 0; i < numParticles; i++) {
-      particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 2 + 1,
-        color: colors[Math.floor(Math.random() * colors.length)]
-      });
-    }
-
+    
+    let lastTime = performance.now();
+    let lastX = 0;
+    let lastY = 0;
+    
     const onMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouseX = e.clientX - rect.left;
-      mouseY = e.clientY - rect.top;
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const now = performance.now();
+      const dt = Math.max(1, now - lastTime);
+      
+      const vx = (x - lastX) / dt;
+      const vy = (y - lastY) / dt;
+      const speed = Math.sqrt(vx * vx + vy * vy);
+      
+      mouseState.current.x = x;
+      mouseState.current.y = y;
+      mouseState.current.vx = vx;
+      mouseState.current.vy = vy;
+      mouseState.current.targetSplit = Math.min(12, speed * 3);
+      
+      if (vFluxRef.current) {
+        vFluxRef.current.innerText = `[V_FLUX: ${(Math.min(99.9, speed * 20)).toFixed(1)}%]`;
+      }
+      if (polarRef.current) {
+        polarRef.current.innerText = `[POLAR: Ø_${((Math.atan2(y - h/2, x - w/2) * 180) / Math.PI).toFixed(1)}°]`;
+      }
+      
+      lastX = x;
+      lastY = y;
+      lastTime = now;
     };
-
+    
     container.addEventListener('mousemove', onMouseMove);
-
+    
+    // Sparks & Waves state
+    const sparks: {x: number, y: number, vx: number, vy: number, life: number, maxLife: number}[] = [];
+    let lastSweepTime = performance.now();
+    let sweepProgress = -1; // -1 means inactive
+    
     let animationId: number;
-
-    const render = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      particles.forEach((p, i) => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Parallax displacement
-        const dx = mouseX - p.x;
-        const dy = mouseY - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 100) {
-          p.x -= (dx / dist) * 1;
-          p.y -= (dy / dist) * 1;
-        }
-
-        if (p.x < 0 || p.x > width) p.vx *= -1;
-        if (p.y < 0 || p.y > height) p.vy *= -1;
-
-        // Fade out at borders
-        const opacityX = Math.min(p.x, width - p.x) / 50;
-        const opacityY = Math.min(p.y, height - p.y) / 50;
-        const alphaMulti = Math.min(1, opacityX, opacityY);
-
+    
+    const render = (time: number) => {
+      ctx.clearRect(0, 0, w, h);
+      
+      // 1. Update RGB split spring physics
+      mouseState.current.targetSplit *= 0.92; // rapid decay
+      mouseState.current.currentSplit += (mouseState.current.targetSplit - mouseState.current.currentSplit) * 0.15;
+      
+      if (container) {
+         container.style.setProperty('--split-x', `${mouseState.current.currentSplit}px`);
+         container.style.setProperty('--split-y', `${mouseState.current.currentSplit * 0.3}px`);
+      }
+      
+      const mx = mouseState.current.x;
+      const my = mouseState.current.y;
+      
+      // 2. Draw Circuit Bus Grid
+      ctx.lineWidth = 0.6;
+      for (let i = 0; i < h; i += 30) {
+        const y = (i + (time / 60)) % h;
+        const dist = Math.abs(my - y);
+        const near = dist < 60;
+        
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = p.color.replace('0.4', (0.4 * alphaMulti).toString());
-        ctx.fill();
-
-        // Draw connections
-        for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const cdx = p.x - p2.x;
-          const cdy = p.y - p2.y;
-          const cDist = Math.sqrt(cdx * cdx + cdy * cdy);
-          
-          if (cDist < 80) {
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${0.15 * (1 - cDist / 80) * alphaMulti})`;
-            ctx.stroke();
-          }
+        ctx.moveTo(0, y);
+        
+        if (near && mx > 0 && mx < w) {
+           // Snap to subtle 45-degree cybernetic diagonals
+           const dx = Math.max(0, 60 - dist);
+           ctx.lineTo(mx - dx, y);
+           ctx.lineTo(mx, y - dx * 0.5);
+           ctx.lineTo(mx + dx, y);
+           ctx.lineTo(w, y);
+           ctx.strokeStyle = `rgba(129, 140, 248, ${0.1 + (1 - dist/60) * 0.3})`;
+        } else {
+           ctx.lineTo(w, y);
+           ctx.strokeStyle = 'rgba(6, 182, 212, 0.05)';
         }
-      });
+        ctx.stroke();
+      }
 
+      // 3. Render Oscilloscope Waveform
+      ctx.beginPath();
+      for(let i = 0; i < w; i += 4) {
+         const dy = Math.sin(time/300 + i/60) * 12 + Math.sin(time/150 + i/25) * 4;
+         const cy = h/2 + dy + 15;
+         
+         if (i === 0) ctx.moveTo(i, cy);
+         else ctx.lineTo(i, cy);
+      }
+      ctx.strokeStyle = `rgba(6, 182, 212, ${0.15 + (mouseState.current.currentSplit * 0.02)})`;
+      ctx.stroke();
+
+      // 4. Ion Sweep / Energy Wavefront
+      if (time - lastSweepTime > 4500) {
+         lastSweepTime = time;
+         sweepProgress = 0;
+      }
+      
+      if (sweepProgress >= 0) {
+         sweepProgress += 0.015;
+         const sweepX = sweepProgress * w;
+         
+         const gradient = ctx.createLinearGradient(sweepX - 80, 0, sweepX + 80, 0);
+         gradient.addColorStop(0, 'rgba(192, 132, 252, 0)');
+         gradient.addColorStop(0.5, 'rgba(45, 212, 191, 0.35)');
+         gradient.addColorStop(1, 'rgba(192, 132, 252, 0)');
+         
+         ctx.fillStyle = gradient;
+         ctx.fillRect(sweepX - 80, 0, 160, h);
+         
+         if (sweepProgress > 1.2) sweepProgress = -1;
+         
+         if (Math.random() > 0.4 && sweepX > 0 && sweepX < w) {
+            sparks.push({
+               x: sweepX,
+               y: h/2 + (Math.random() - 0.5) * 80,
+               vx: (Math.random() - 0.5) * 2,
+               vy: Math.random() * 1.5 + 0.5,
+               life: 0,
+               maxLife: Math.random() * 30 + 15
+            });
+         }
+      }
+      
+      // Render sparks
+      for (let i = sparks.length - 1; i >= 0; i--) {
+         const p = sparks[i];
+         p.life++;
+         p.x += p.vx;
+         p.y += p.vy;
+         
+         const alpha = 1 - (p.life / p.maxLife);
+         ctx.fillStyle = `rgba(45, 212, 191, ${alpha})`;
+         ctx.beginPath();
+         ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2);
+         ctx.fill();
+         
+         if (p.life >= p.maxLife) sparks.splice(i, 1);
+      }
+      
       animationId = requestAnimationFrame(render);
     };
-
-    render();
-
+    
+    animationId = requestAnimationFrame(render);
+    
     return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', resize);
-      container.removeEventListener('mousemove', onMouseMove);
+       window.removeEventListener('resize', resize);
+       container.removeEventListener('mousemove', onMouseMove);
+       cancelAnimationFrame(animationId);
     };
   }, []);
 
   return (
-    <div 
-      ref={containerRef} 
-      style={{ 
-        position: 'relative', 
-        textAlign: 'center', 
-        marginBottom: '2.5rem', 
-        padding: '3rem 1rem', 
-        overflow: 'hidden', 
+    <div
+      ref={containerRef}
+      style={{
+        position: 'relative',
+        padding: '4rem 1.5rem',
+        marginBottom: '2.5rem',
         borderRadius: '16px',
-        border: '1px solid rgba(56, 189, 248, 0.1)',
-        background: 'radial-gradient(ellipse at top, rgba(17, 24, 39, 1), rgba(5, 6, 8, 1))'
-      }}
+        border: '1px solid rgba(56, 189, 248, 0.15)',
+        background: 'linear-gradient(180deg, #050608 0%, #0a0c12 100%)',
+        overflow: 'hidden',
+        textAlign: 'center',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+        '--split-x': '0px',
+        '--split-y': '0px'
+      } as React.CSSProperties}
     >
-      <canvas 
-        ref={canvasRef} 
-        style={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          width: '100%', 
-          height: '100%', 
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          top: 0, left: 0,
+          width: '100%', height: '100%',
           pointerEvents: 'none',
-          willChange: 'opacity'
-        }} 
+          zIndex: 0
+        }}
       />
-
-      <style>
-        {`
-          @keyframes aurora {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-          @keyframes glowPulse {
-            0% { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.3)); }
-            50% { filter: drop-shadow(0 0 25px rgba(129, 140, 248, 0.6)); }
-            100% { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.3)); }
-          }
-          .kinetic-title {
-            background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc, #2dd4bf, #38bdf8);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: aurora 5s ease infinite, glowPulse 4s ease-in-out infinite;
-            will-change: transform, opacity;
-            font-family: inherit;
-          }
-          .hud-cursor {
-            display: inline-block;
-            width: 8px;
-            height: 14px;
-            background-color: #38bdf8;
-            margin-left: 4px;
-            animation: blink 1s step-end infinite;
-            vertical-align: middle;
-          }
-          @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-          }
-        `}
-      </style>
-
-      <div style={{ position: 'relative', zIndex: 10 }}>
-        {/* Telemetry Marks */}
-        <div style={{ position: 'absolute', top: -10, left: 0, width: '10px', height: '10px', borderTop: '2px solid rgba(56, 189, 248, 0.3)', borderLeft: '2px solid rgba(56, 189, 248, 0.3)' }} />
-        <div style={{ position: 'absolute', top: -10, right: 0, width: '10px', height: '10px', borderTop: '2px solid rgba(56, 189, 248, 0.3)', borderRight: '2px solid rgba(56, 189, 248, 0.3)' }} />
-
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
-          <div style={{ width: '6px', height: '6px', background: '#2dd4bf', borderRadius: '50%', boxShadow: '0 0 8px #2dd4bf' }} />
-          <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: '#2dd4bf', letterSpacing: '0.1em' }}>SYSTEM READY // V2.4</span>
+      
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+        
+        {/* Architectural HUD Telemetry (Top) */}
+        <div style={{ 
+          display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '720px', 
+          fontSize: '0.65rem', fontFamily: 'monospace', color: '#06b6d4', opacity: 0.8, letterSpacing: '0.1em' 
+        }}>
+           <span ref={vFluxRef}>[V_FLUX: 00.0%]</span>
+           <span ref={polarRef}>[POLAR: Ø_00.0°]</span>
         </div>
 
-        <h2 
-          className="kinetic-title"
-          style={{
-            fontSize: 'clamp(1.75rem, 5vw, 3rem)',
-            fontWeight: 900,
-            margin: '0 0 1rem 0',
-            letterSpacing: '-0.02em',
-            fontFamily: displayText.includes('#') ? 'monospace' : 'inherit'
-          }}
-        >
-          {displayText}
-        </h2>
-
-        <p style={{ 
-          color: '#94A3B8', 
-          fontSize: 'clamp(0.875rem, 2vw, 1.0625rem)', 
-          maxWidth: '640px', 
-          margin: '0 auto', 
+        {/* Prismatic Dispersion & Chromatic Split Title */}
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+           {/* Cyan Split */}
+           <h2 style={{
+             position: 'absolute', top: 'calc(var(--split-y) * -1)', left: 'calc(var(--split-x) * -1)',
+             fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 900,
+             margin: 0, color: '#00f0ff',
+             mixBlendMode: 'screen', pointerEvents: 'none',
+             filter: 'blur(1px)', opacity: 0.8,
+             willChange: 'transform'
+           }}>{TEXT}</h2>
+           
+           {/* Magenta Split */}
+           <h2 style={{
+             position: 'absolute', top: 'var(--split-y)', left: 'var(--split-x)',
+             fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 900,
+             margin: 0, color: '#ff0070',
+             mixBlendMode: 'screen', pointerEvents: 'none',
+             filter: 'blur(1px)', opacity: 0.8,
+             willChange: 'transform'
+           }}>{TEXT}</h2>
+           
+           {/* Core Text */}
+           <h2 style={{
+             position: 'relative',
+             fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 900,
+             margin: 0,
+             color: '#ffffff',
+             textShadow: '0 0 24px rgba(255, 255, 255, 0.25)'
+           }}>{TEXT}</h2>
+        </div>
+        
+        <p style={{
+          color: '#94A3B8',
+          fontSize: 'clamp(0.875rem, 2vw, 1.0625rem)',
+          maxWidth: '640px',
+          margin: '0 auto',
           lineHeight: 1.6,
           fontFamily: 'monospace'
         }}>
-          {subText}
-          {!isTypingComplete && <span className="hud-cursor" />}
+          Tell us about your skills and interests. Our AI engine will generate a tailored project blueprint with architecture, roadmap, and defense prep.
         </p>
 
-        {/* Bottom Telemetry Marks */}
-        <div style={{ position: 'absolute', bottom: -10, left: 0, width: '10px', height: '10px', borderBottom: '2px solid rgba(56, 189, 248, 0.3)', borderLeft: '2px solid rgba(56, 189, 248, 0.3)' }} />
-        <div style={{ position: 'absolute', bottom: -10, right: 0, width: '10px', height: '10px', borderBottom: '2px solid rgba(56, 189, 248, 0.3)', borderRight: '2px solid rgba(56, 189, 248, 0.3)' }} />
+        {/* Bottom HUD */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '720px', gap: '1rem', marginTop: '0.5rem' }}>
+           <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(129, 140, 248, 0.4))' }} />
+           <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: '#818cf8', letterSpacing: '0.15em', opacity: 0.8 }}>SYS.OPT // ACTIVE</span>
+           <div style={{ flex: 1, height: '1px', background: 'linear-gradient(270deg, transparent, rgba(129, 140, 248, 0.4))' }} />
+        </div>
+        
       </div>
     </div>
   );
-};
-
-export default KineticHeroHeader;
+}
