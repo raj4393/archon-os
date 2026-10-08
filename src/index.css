@@ -357,3 +357,89 @@ input[type="number"]::-webkit-outer-spin-button {
     backdrop-filter: none !important;
   }
 }
+
+/* ---- Cybernetic Motion UI Upgrades ---- */
+.fluid-pill {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow, border-color;
+  border: 1px solid transparent;
+}
+.fluid-pill:active {
+  transform: scale(0.95);
+}
+.fluid-pill.active {
+  background: #1e2230;
+  color: #f3f4f6;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+.fluid-pill.active.ambition-shimmer {
+  background: linear-gradient(#1e2230, #1e2230) padding-box,
+              linear-gradient(60deg, #06b6d4, #818cf8, #c084fc, #06b6d4) border-box;
+  border: 1px solid transparent !important;
+  background-size: 200% 200%;
+  animation: shimmer-border 3s linear infinite;
+}
+
+@keyframes shimmer-border {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.input-glow-flare {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.input-glow-flare:focus {
+  box-shadow: inset 0 0 12px rgba(6, 182, 212, 0.15), 0 0 0 1px #06b6d4 !important;
+  border-color: #06b6d4 !important;
+}
+
+.parameter-card-shell {
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+.parameter-card-shell:hover {
+  background: radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(56, 189, 248, 0.08), transparent 40%), #0c0e12 !important;
+}
+
+@keyframes heartbeat-ping {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(2.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+.telemetry-heartbeat {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.telemetry-heartbeat::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  border: 1px solid #10b981;
+  animation: heartbeat-ping 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.telemetry-scanline {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+.telemetry-scanline::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: scanline 4s linear infinite;
+}
+@keyframes scanline {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}

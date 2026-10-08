@@ -109,11 +109,26 @@ export function Navbar({ activeTab, onTabChange, engineStatus: _engineStatus, is
 
       {/* Center: Pipeline Stepper */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', position: 'relative' }} role="tablist">
-        <div style={{ display: 'none' }} />
-        
+        {/* Animated Laser Underline */}
+        <div style={{
+          position: 'absolute',
+          bottom: '-0.25rem',
+          left: 0,
+          height: '2px',
+          width: '120px',
+          background: 'linear-gradient(90deg, transparent, #06b6d4, #818cf8, transparent)',
+          boxShadow: '0 0 10px rgba(6, 182, 212, 0.8)',
+          transform: `translateX(${NAV_TABS.findIndex(t => t.id === activeTab) * (120 + 8 + 12 + 8)}px)`,
+          transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          pointerEvents: 'none',
+          zIndex: 10
+        }} />
+
         {NAV_TABS.map((tab, index) => {
           const isActive = activeTab === tab.id;
           const isPassed = NAV_TABS.findIndex(t => t.id === activeTab) > index;
+          const isNext = NAV_TABS.findIndex(t => t.id === activeTab) === index - 1;
+          
           return (
             <React.Fragment key={tab.id}>
               <button
@@ -133,7 +148,7 @@ export function Navbar({ activeTab, onTabChange, engineStatus: _engineStatus, is
                   fontSize: '0.75rem',
                   fontWeight: isActive ? 500 : 400,
                   color: isActive ? '#ffffff' : isPassed ? '#94a3b8' : '#64748b',
-                  background: 'transparent',
+                  background: isActive ? 'linear-gradient(180deg, rgba(255,255,255,0.05), transparent)' : 'transparent',
                   transition: 'all 0.2s ease',
                   position: 'relative',
                   zIndex: 1,
@@ -142,7 +157,21 @@ export function Navbar({ activeTab, onTabChange, engineStatus: _engineStatus, is
                 <span className="hide-on-mobile">{isActive ? `${index + 1}. ${tab.label}` : `${index + 1}. ${tab.label}`}</span>
               </button>
               {index < NAV_TABS.length - 1 && (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg 
+                  width="12" 
+                  height="12" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke={isNext ? "#06b6d4" : "currentColor"} 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  style={{
+                    opacity: isNext ? 1 : 0.3,
+                    filter: isNext ? 'drop-shadow(0 0 6px #06b6d4)' : 'none',
+                    transition: 'all 0.4s ease'
+                  }}
+                >
                   <path d="M5 12h14"></path>
                   <path d="M12 5l7 7-7 7"></path>
                 </svg>
@@ -155,12 +184,35 @@ export function Navbar({ activeTab, onTabChange, engineStatus: _engineStatus, is
       {/* Right: Controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         {/* Readiness Ring */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: '#f7f8f8', fontSize: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: '#f7f8f8', fontSize: '0.75rem', position: 'relative' }}>
           <div style={{ position: 'relative', width: '20px', height: '20px' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" style={{ transform: 'rotate(-90deg)' }} className={readinessScore > 0 && readinessScore % 25 === 0 ? 'readiness-ring-glow' : ''}>
-              <circle cx="12" cy="12" r="10" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
-              <circle cx="12" cy="12" r="10" fill="none" stroke={readinessScore >= 80 ? '#10b981' : readinessScore >= 50 ? '#06b6d4' : '#F59E0B'} strokeWidth="3" strokeDasharray="62.8" strokeDashoffset={62.8 - (62.8 * readinessScore) / 100} style={{ transition: 'stroke-dashoffset 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+              <defs>
+                <linearGradient id="cyanIndigo" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#06b6d4" />
+                  <stop offset="100%" stopColor="#818cf8" />
+                </linearGradient>
+              </defs>
+              <circle cx="12" cy="12" r="10" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="3" />
+              <circle cx="12" cy="12" r="10" fill="none" stroke="url(#cyanIndigo)" strokeWidth="3" strokeDasharray="62.8" strokeDashoffset={62.8 - (62.8 * readinessScore) / 100} style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1)' }} />
             </svg>
+            <div style={{
+              position: 'absolute',
+              top: 0, left: 0, width: '100%', height: '100%',
+              transform: `rotate(${(readinessScore / 100) * 360}deg)`,
+              transition: 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+              pointerEvents: 'none'
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: '-1px', left: '50%',
+                transform: 'translateX(-50%)',
+                width: '4px', height: '4px',
+                background: '#fff',
+                borderRadius: '50%',
+                boxShadow: '0 0 8px 2px #06b6d4'
+              }} />
+            </div>
           </div>
           <span style={{ fontFamily: 'monospace' }}>{readinessScore}%</span>
         </div>

@@ -33,6 +33,7 @@ import { IEEEPrintPreviewModal } from './presentation/common/IEEEPrintPreviewMod
 import { LiteratureMatrix } from './presentation/modules/academic/LiteratureMatrix';
 import { AcademicRubric } from './presentation/modules/academic/AcademicRubric';
 import { FacultyGradingPanel } from './presentation/modules/assessment/FacultyGradingPanel';
+import KineticHeroHeader from './components/KineticHeroHeader';
 
 /**
  * Root application component rendering the Archon OS platform.
@@ -298,22 +299,7 @@ export default function App(): React.JSX.Element {
         {state.activeTab === 'intake' && (
           <div id="panel-intake" role="tabpanel" aria-labelledby="tab-intake" className="animate-fadeIn">
             {/* Hero */}
-            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-              <h2 style={{
-                fontSize: '2rem',
-                fontWeight: 800,
-                margin: '0 0 0.75rem 0',
-                background: 'linear-gradient(135deg, #00F5A0, #00D9F5, #8B5CF6)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}>
-                Build Your Capstone Project
-              </h2>
-              <p style={{ color: '#94A3B8', fontSize: '1.0625rem', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
-                Tell us about your skills and interests. Our AI engine will generate a tailored project blueprint with architecture, roadmap, and defense prep.
-              </p>
-            </div>
+            <KineticHeroHeader />
 
                 {/* Multi-Step Form Layout */}
                 <div style={{ maxWidth: '48rem', margin: '2rem auto', padding: '2rem', background: '#111827', borderRadius: '12px', border: '1px solid #1f2937', display: 'flex', flexDirection: 'column', gap: '2.5rem', overflow: 'hidden' }}>
@@ -338,7 +324,16 @@ export default function App(): React.JSX.Element {
                       transform: activeSubStep === 1 ? 'translateX(0)' : (activeSubStep > 1 ? (slideDirection === 'forward' ? 'translateX(-20px)' : 'translateX(20px)') : 'translateX(20px)'),
                       transition: 'all 250ms cubic-bezier(0.16, 1, 0.3, 1)',
                     }}>
-                      <SurfaceCard ariaLabel="Student information" as="section" style={{ padding: '1.25rem' }}>
+                    <div 
+                      className="parameter-card-shell"
+                      onMouseMove={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                        e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                      }}
+                      style={{ borderRadius: '12px', border: '1px solid #1e2230' }}
+                    >
+                      <SurfaceCard ariaLabel="Student information" as="section" style={{ padding: '1.25rem', background: 'transparent', border: 'none' }}>
                         <h3 style={{ color: '#f3f4f6', fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem' }}>
                           Project Parameters
                         </h3>
@@ -346,16 +341,18 @@ export default function App(): React.JSX.Element {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                             <label htmlFor="student-name" style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>Student Name</label>
                             <input id="student-name" type="text" value={studentName} onChange={(e) => setStudentName(e.target.value)} placeholder="Enter full name"
-                              style={{ background: '#090a0f', border: '1px solid #1e2230', borderRadius: '6px', padding: '0.5rem 0.75rem', color: '#f3f4f6', fontSize: '0.875rem', outline: 'none', transition: 'all 0.2s' }}
-                              onFocus={(e) => { e.currentTarget.style.borderColor = '#9ca3af'; }} onBlur={(e) => { e.currentTarget.style.borderColor = '#1e2230'; }}
+                              className="input-glow-flare"
+                              style={{ background: '#090a0f', border: '1px solid #1e2230', borderRadius: '6px', padding: '0.5rem 0.75rem', color: '#f3f4f6', fontSize: '0.875rem', outline: 'none' }}
                             />
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                               <label style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>Timeline</label>
-                              <div style={{ display: 'flex', background: '#090a0f', borderRadius: '6px', border: '1px solid #1e2230', overflow: 'hidden' }}>
+                              <div style={{ display: 'flex', background: '#090a0f', borderRadius: '6px', border: '1px solid #1e2230', padding: '2px', gap: '2px' }}>
                                 {Object.values(TimeFrame).map(tf => (
-                                  <button key={tf} onClick={() => setTimeFrame(tf)} style={{ flex: 1, padding: '0.5rem', background: timeFrame === tf ? '#1e2230' : 'transparent', color: timeFrame === tf ? '#f3f4f6' : '#64748b', border: 'none', fontSize: '0.75rem', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+                                  <button key={tf} onClick={() => setTimeFrame(tf)} 
+                                    className={`fluid-pill ${timeFrame === tf ? 'active' : ''}`}
+                                    style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', background: 'transparent', color: '#64748b', fontSize: '0.75rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                                     {tf.replace(' Weeks', 'w')}
                                   </button>
                                 ))}
@@ -372,9 +369,11 @@ export default function App(): React.JSX.Element {
                           </div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                             <label style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>Ambition Tier</label>
-                            <div style={{ display: 'flex', background: '#090a0f', borderRadius: '6px', border: '1px solid #1e2230', overflow: 'hidden', padding: '2px' }}>
+                            <div style={{ display: 'flex', background: '#090a0f', borderRadius: '6px', border: '1px solid #1e2230', padding: '2px', gap: '2px' }}>
                               {Object.values(AmbitionLevel).map((al) => (
-                                <button key={al} onClick={() => setAmbition(al)} style={{ flex: 1, padding: '0.5rem', background: ambition === al ? '#1e2230' : 'transparent', color: ambition === al ? '#f3f4f6' : '#64748b', border: 'none', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                <button key={al} onClick={() => setAmbition(al)} 
+                                  className={`fluid-pill ${ambition === al ? 'active' : ''} ${ambition === al && (al === 'Ambitious' || al === 'Moonshot') ? 'ambition-shimmer' : ''}`}
+                                  style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', background: 'transparent', color: '#64748b', fontSize: '0.75rem', cursor: 'pointer' }}>
                                   {al === 'Practical' ? 'Minimalist' : al}
                                 </button>
                               ))}
@@ -382,6 +381,7 @@ export default function App(): React.JSX.Element {
                           </div>
                         </div>
                       </SurfaceCard>
+                    </div>
                     </div>
 
                     <div style={{
@@ -744,8 +744,14 @@ export default function App(): React.JSX.Element {
         </div>
         
         {/* Right: System Health */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ color: '#10b981' }}>Vitest: 41 Passed | Strict TypeScript | Production Build Ready</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#10b981', fontSize: '0.75rem' }}>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <span className="telemetry-heartbeat" />
+            SYSTEM ONLINE
+          </span>
+          <span className="telemetry-scanline" style={{ background: '#10131c', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '4px' }}>Vitest: 46 Passed</span>
+          <span className="telemetry-scanline" style={{ background: '#10131c', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '4px' }}>Strict TypeScript</span>
+          <span className="telemetry-scanline" style={{ background: '#10131c', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '4px' }}>Production Build Ready</span>
         </div>
       </div>
 
