@@ -82,8 +82,18 @@ export enum AmbitionLevel {
  * @property ambition - Desired project complexity level
  * @property teamSize - Number of team members (1-5)
  */
+export enum PrimaryDiscipline {
+  SoftwareAndAI = 'Software & AI',
+  RoboticsAndEmbedded = 'Robotics & Embedded',
+  ElectricalAndElectronics = 'Electrical & Electronics',
+  MechanicalAndAerospace = 'Mechanical & Aerospace',
+  CivilAndInfrastructure = 'Civil & Infrastructure',
+  Interdisciplinary = 'Interdisciplinary',
+}
+
 export interface StudentProfile {
   readonly studentName: string;
+  readonly primaryDiscipline?: PrimaryDiscipline | string;
   readonly skills: ReadonlyArray<SkillEntry>;
   readonly domains: ReadonlyArray<DomainPillar>;
   readonly timeFrame: TimeFrame;

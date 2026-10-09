@@ -106,7 +106,7 @@ export function SkillMatrixInput({ selectedSkills, onSkillsChange }: SkillMatrix
   return (
     <SurfaceCard ariaLabel="Skill matrix input" as="section">
       <h3 style={{ color: '#f8fafc', fontSize: '1.125rem', fontWeight: 700, marginTop: 0, marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span>🧬 Skill Taxonomy Matrix</span>
+        <span>🧬 Core Domains, Tools & Technologies</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {selectedSkills.length > 0 && (
             <button onClick={() => onSkillsChange([])} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', fontSize: '0.6875rem', cursor: 'pointer', padding: '2px 8px', borderRadius: '4px', transition: 'all 0.2s' }}>
@@ -137,7 +137,7 @@ export function SkillMatrixInput({ selectedSkills, onSkillsChange }: SkillMatrix
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !exactMatchExists && handleAddCustomSkill()}
-          placeholder="Search 50+ technologies or type custom..." 
+          placeholder="e.g., Python & PyTorch, ROS & Embedded C, SolidWorks & ANSYS, MATLAB/Simulink, Revit/ETABS"
           style={{ width: '100%', padding: '0 0.75rem', height: '2.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFF', borderRadius: '8px', transition: 'all 0.2s', outline: 'none' }}
           onFocus={(e) => { e.currentTarget.style.borderColor = '#06b6d4'; }}
           onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}

@@ -9,7 +9,7 @@ import { useCallback, useState, useEffect } from 'react';
 import { useStore } from './core/state/StoreContext';
 import { EngineStatus, type ActiveTab } from './core/state/projectReducer';
 import type { SkillEntry, StudentProfile } from './domain/contracts/student.contract';
-import { TimeFrame, AmbitionLevel, type DomainPillar } from './domain/contracts/student.contract';
+import { TimeFrame, AmbitionLevel, PrimaryDiscipline, type DomainPillar } from './domain/contracts/student.contract';
 import { generateDefaultRoadmap, generateDefaultDefense } from './domain/models/projectPresets';
 import { generateBlueprint } from './infrastructure/ai/geminiClient';
 import { downloadIEEESynopsis } from './infrastructure/serialization/ieeeMarkdownExporter';
@@ -49,6 +49,7 @@ export default function App(): React.JSX.Element {
   const [skills, setSkills] = useState<ReadonlyArray<SkillEntry>>([]);
   const [domains, setDomains] = useState<ReadonlyArray<DomainPillar>>([]);
   const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.TwelveWeeks);
+  const [primaryDiscipline, setPrimaryDiscipline] = useState<PrimaryDiscipline | string>(PrimaryDiscipline.SoftwareAndAI);
   const [ambition, setAmbition] = useState<AmbitionLevel>(AmbitionLevel.Ambitious);
   const [teamSize, setTeamSize] = useState(1);
   const [latency, setLatency] = useState<number | null>(null);
@@ -83,6 +84,7 @@ export default function App(): React.JSX.Element {
 
     const profile: StudentProfile = {
       studentName: studentName.trim().slice(0, 80) || 'Student',
+      primaryDiscipline,
       skills: [...skills],
       domains: [...domains],
       timeFrame,
@@ -338,12 +340,27 @@ export default function App(): React.JSX.Element {
                           Project Parameters
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-                            <label htmlFor="student-name" style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>Student Name</label>
-                            <input id="student-name" type="text" value={studentName} onChange={(e) => setStudentName(e.target.value)} placeholder="Enter full name"
-                              className="input-glow-flare"
-                              style={{ background: '#090a0f', border: '1px solid #1e2230', borderRadius: '6px', padding: '0.5rem 0.75rem', color: '#f3f4f6', fontSize: '0.875rem', outline: 'none' }}
-                            />
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                              <label htmlFor="student-name" style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>Student Name</label>
+                              <input id="student-name" type="text" value={studentName} onChange={(e) => setStudentName(e.target.value)} placeholder="Enter full name"
+                                className="input-glow-flare"
+                                style={{ background: '#090a0f', border: '1px solid #1e2230', borderRadius: '6px', padding: '0.5rem 0.75rem', color: '#f3f4f6', fontSize: '0.875rem', outline: 'none' }}
+                              />
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                              <label htmlFor="primary-discipline" style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>Primary Discipline</label>
+                              <select
+                                id="primary-discipline"
+                                value={primaryDiscipline}
+                                onChange={(e) => setPrimaryDiscipline(e.target.value as any)}
+                                style={{ background: '#090a0f', border: '1px solid #1e2230', borderRadius: '6px', padding: '0.5rem 0.75rem', color: '#f3f4f6', fontSize: '0.875rem', outline: 'none', cursor: 'pointer', appearance: 'none' }}
+                              >
+                                {Object.values(PrimaryDiscipline).map(pd => (
+                                  <option key={pd} value={pd}>{pd}</option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
@@ -377,6 +394,11 @@ export default function App(): React.JSX.Element {
                                   {al === 'Practical' ? 'Minimalist' : al}
                                 </button>
                               ))}
+                            </div>
+                            <div style={{ fontSize: '0.6875rem', color: '#64748b', marginTop: '0.25rem', height: '2.5rem' }}>
+                              {ambition === AmbitionLevel.Practical && "Core functional prototype, baseline simulation, and standard academic compliance."}
+                              {ambition === AmbitionLevel.Ambitious && "Integrated multi-module system, rigorous test matrices, and deep performance analysis."}
+                              {ambition === AmbitionLevel.Moonshot && "Novel technical architecture, edge hardware/sensor integration, and exhaustive viva defense."}
                             </div>
                           </div>
                         </div>
